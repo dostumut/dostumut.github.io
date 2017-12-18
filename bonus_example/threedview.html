@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>MapImageLayer - Toggle sublayer visibility - 4.5</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.5/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.5/"></script>
+
+  <script>
+    require([
+        "esri/Map",
+        "esri/views/SceneView",
+        "esri/layers/MapImageLayer",
+        "dojo/on",
+        "dojo/domReady!"
+      ],
+      function(
+        Map, SceneView, MapImageLayer, on
+      ) {
+
+        /*****************************************************************
+         * Create a renderer for the dynamic data layer (table).
+         *****************************************************************/
+
+
+        /*****************************************************************
+         * Create a MapImageLayer instance pointing to a Map Service
+         * containing data about US Cities, Counties, States and Highways.
+         * Define sublayers with visibility for each layer in Map Service.
+         *****************************************************************/
+        var layer = new MapImageLayer({
+          url: "http://maps.helcom.fi/arcgis104/rest/services/MADS/Pressures/MapServer/",
+          sublayers: [
+          {
+            id: 1,
+            visible: true
+          }, {
+            id: 2,
+            visible: false,
+
+          }, {
+            id: 3,
+            visible: true
+          }, {
+            id: 4,
+            visible: true
+          }]
+        });
+
+        /*****************************************************************
+         * Add the layer to a map
+         *****************************************************************/
+        var map = new Map({
+          basemap: "hybrid",
+          layers: [layer]
+        });
+
+        var view = new SceneView({
+          container: "viewDiv",
+          map: map,
+          zoom: 5,
+          center: [19, 59]
+        });
+
+        /*****************************************************************
+         * Wait for Layer to load and update the page to refelect which
+         * layers are visible in the Map Service.
+         *****************************************************************/
+        layer.then(function() {
+          layer.sublayers.map(function(sublayer) {
+            var id = sublayer.id;
+            var visible = sublayer.visible;
+            var node = document.querySelector(
+              ".sublayers-item[data-id='" + id + "']");
+            if (visible) {
+              node.classList.add("visible-layer");
+            }
+          });
+        });
+
+        /*****************************************************************
+         * Listen for when buttons on the page have been clicked to turn
+         * layers on and off in the Map Service.
+         *****************************************************************/
+        var sublayersElement = document.querySelector(".sublayers");
+        on(sublayersElement, ".sublayers-item:click", function(e) {
+          var id = e.target.getAttribute("data-id");
+          if (id) {
+            var sublayer = layer.findSublayerById(parseInt(id));
+            var node = document.querySelector(".sublayers-item[data-id='" +
+              id + "']");
+            sublayer.visible = !sublayer.visible;
+            node.classList.toggle("visible-layer");
+          }
+        });
+      });
+  </script>
+
+  <style>
+    html,
+    body {
+      font-family: sans-serif;
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    #viewDiv {
+      position: absolute;
+      right: 0;
+      left: 0;
+      top: 0;
+      bottom: 60px;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 0;
+      height: 60px;
+      width: 100%;
+    }
+
+    .sublayers {
+      margin: 0 auto;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+    }
+
+    .sublayers-item {
+      flex-grow: 4;
+      background-color: rgba(34, 111, 14, .5);
+      color: #FFF;
+      margin: 1px;
+      width: 50%;
+      padding: 20px;
+      overflow: auto;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.7em;
+    }
+
+    .visible-layer {
+      color: #fff;
+      background-color: #226F0E;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+  <div class="footer">
+    <div class="sublayers">
+      <div class="sublayers-item" data-id="1">A</div>
+      <div class="sublayers-item" data-id="2">B</div>
+      <div class="sublayers-item" data-id="3">R</div>
+      <div class="sublayers-item" data-id="4">S</div>
+    </div>
+  </div>
+</body>
+
+</html>

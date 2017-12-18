@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Image ArcGIS MapServer</title>
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.6.4/css/ol.css" type="text/css">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://openlayers.org/en/v4.6.4/build/ol.js"></script>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <script>
+      var url = 'http://maps.helcom.fi/arcgis104/rest/services/MADS/Pressures/MapServer';
+      var sfll=[19,59];
+      var sfwm=ol.proj.fromLonLat(sfll);
+      var layers = [
+        new ol.layer.Tile({
+          source: new ol.source.OSM()
+        }),
+        new ol.layer.Image({
+          source: new ol.source.ImageArcGISRest({
+            ratio: 1,
+            params: {layers: "show:1"},
+
+
+            url: url
+          })
+        })
+      ];
+      var map = new ol.Map({
+        layers: layers,
+        target: 'map',
+        view: new ol.View({
+          center: sfwm,
+          zoom: 5
+        })
+      });
+    </script>
+  </body>
+</html>
