@@ -64,7 +64,12 @@
       parser.parse();
       //var iTask,params;
 
-      var statusURL = "http://maps.helcom.fi/arcgis104/rest/services/MADS/Sea_environmental_status/MapServer";
+      var statusURL = "https://maps.helcom.fi/arcgis/rest/services/MADS/Sea_environmental_status/MapServer";
+      var monitoringURL = "https://maps.helcom.fi/arcgis/rest/services/MADS/Sea_environmental_monitoring/MapServer";
+      var pressuresURL = "https://maps.helcom.fi/arcgis/rest/services/MADS/Pressures/MapServer";
+      var biodiversityURL ="https://maps.helcom.fi/arcgis/rest/services/MADS/Biodiversity/MapServer";
+      var shippingURL = "https://maps.helcom.fi/arcgis/rest/services/MADS/Shipping/MapServer";
+      var backgroundURL = "https://maps.helcom.fi/arcgis/rest/services/MADS/Background/MapServer";
 
       var map = new Map("mapDiv", {
         basemap: "topo",
@@ -77,17 +82,27 @@
       var status = new ArcGISDynamicMapServiceLayer(statusURL, {
         id: "status"
       });
-      var monitoring = new ArcGISDynamicMapServiceLayer("http://62.236.121.188/arcgis104/rest/services/MADS/Sea_environmental_monitoring/MapServer");
-      var pressures = new ArcGISDynamicMapServiceLayer("http://maps.helcom.fi/arcgis104/rest/services/MADS/Pressures/MapServer");
-      var biodiversity = new ArcGISDynamicMapServiceLayer("http://maps.helcom.fi/arcgis104/rest/services/MADS/Biodiversity/MapServer");
-      var shipping = new ArcGISDynamicMapServiceLayer("http://maps.helcom.fi/arcgis104/rest/services/MADS/Shipping/MapServer");
-      var background = new ArcGISDynamicMapServiceLayer("http://maps.helcom.fi/arcgis104/rest/services/MADS/Background/MapServer");
+      var monitoring = new ArcGISDynamicMapServiceLayer(monitoringURL, {
+        id: "monitoring"
+      });
+      var pressures = new ArcGISDynamicMapServiceLayer(pressuresURL, {
+        id: "pressures"
+      });
+      var biodiversity = new ArcGISDynamicMapServiceLayer(biodiversityURL, {
+        id: "biodiversity"
+      });
+      var shipping = new ArcGISDynamicMapServiceLayer(shippingURL, {
+        id: "shipping"
+      });
+      var background = new ArcGISDynamicMapServiceLayer(backgroundURL, {
+        id: "background"
+      });
 
       //ALL the ids status and biodiversity and so on
       function getMapLayers() {
         for (var j = 0, jl = map.layerIds.length; j < jl; j++) {
           var currentLayer = map.getLayer(map.layerIds[j]);
-          console.log("id: " + currentLayer.id);
+          return (currentLayer.id);
         }
       };
 
@@ -95,9 +110,10 @@
 
       var iTask = new IdentifyTask(statusURL);
 
+
       function onIdentifyComplete(results) {
         return arrayUtils.map(results, function(result) {
-          console.log(result);
+          //console.log(result);
           var feature = result.feature,
             title = result.layerName;
           feature.infoTemplate = new InfoTemplate(title, "${*}");
@@ -108,24 +124,21 @@
       function onMapClick(event) {
         getMapLayers();
         var params = new IdentifyParameters(),
+
           defResults;
-        console.log("params" + params);
-        console.log("layer infos" + status.visibleLayers);
+        // console.log("params" + params);
+        // console.log("layer infos" + status.visibleLayers);
         params.geometry = event.mapPoint;
         params.layerOption = IdentifyParameters.LAYER_OPTION_VISIBLE;
-        console.log(IdentifyResult.LayerId);
-        console.log();
+        // console.log(IdentifyResult.LayerId);
+        // console.log();
         params.mapExtent = map.extent;
-        params.layerIds = status.visibleLayers;
+       params.layerIds = status.visibleLayers;
         params.returnGeometry = true;
         params.width = map.width;
         params.height = map.height;
-
-
         params.spatialReference = map.spatialReference;
         params.tolerance = 3;
-
-
         defResults = iTask.execute(params).addCallback(onIdentifyComplete);
         map.infoWindow.setFeatures([defResults]);
         map.infoWindow.show(event.mapPoint);
@@ -135,7 +148,6 @@
         map.on("click", onMapClick);
       }
 
-
       map.addLayers([monitoring, pressures, biodiversity, shipping, background, status]);
 
       if (map.loaded) {
@@ -143,8 +155,6 @@
       } else {
         map.on("load", onMapLoad);
       }
-
-
 
       on(map, "layers-add-result", function(evt) {
 
@@ -186,10 +196,6 @@
         layerList.startup();
 
 
-
-
-
-
         var basemapGallery = new BasemapGallery({
           showArcGISBasemaps: true,
           map: map
@@ -201,12 +207,6 @@
         }, "legendDiv");
         legendDijit.startup();
 
-        var home = new HomeButton({
-          map: map,
-          extent: null,
-          visible: true
-        }, "HomeButton");
-        home.startup();
 
 
         // var infoWindow = new InfoWindow({map:map,}, domConstruct.create("map"));
@@ -223,7 +223,7 @@
             </div>
             <div id="mapDiv" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
             </div>
-        <div style="position:absolute; left:20px; bottom:40px; z-Index:999;">
+        <div style="position:absolute; left:20px; bottom:20px; z-Index:999;">
         <div data-dojo-type="dijit/TitlePane"
              data-dojo-props="title:'Switch Basemap', open:false">
           <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
@@ -232,13 +232,7 @@
         </div>
       </div>
 
-      <div style="position:absolute; left:60px; bottom:10px; z-Index:999;">
-      <div data-dojo-type="dijit/TitlePane"
-           data-dojo-props="title:'show legend', open:false">
-        <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
-        <div id="legendDiv"></div>
-      </div>
-    </div>
+
 
 
     </body>
